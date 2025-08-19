@@ -1,0 +1,32 @@
+body { 
+    background-color: black;
+    color: darkgray;
+    margin: 0;
+    padding:0;
+    width: 100vw;
+    height: 100vh;
+}
+
+#command {
+    border: none;
+    background-color: transparent;
+    color: lime;
+    border: 1px solid lime;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    height: 15px;
+}
+
+#command::placeholder {
+    content: "> ";
+    color: lime;
+}
+
+#output-container {
+    width: 100%;
+    height: calc(100% - 20px);
+}
+
+input:focus {
+    outline: none;
+}
