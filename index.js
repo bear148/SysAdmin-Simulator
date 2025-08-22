@@ -1,24 +1,32 @@
 const outputContainer = document.getElementById('output-container');
+let commandParser;
+
 let devices = [];
+let commands = [
+    "route",
+    "scan",
+];
 
 window.onload = function() {
     outputContainer.innerHTML = `<p>Welcome to the SysAdmin Simulator!</p>`;
     outputContainer.innerHTML += `<p>Type 'help' for a list of commands.</p>`;
 
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'lime';
+
     let startingRouter = new Router();
+    commandParser = new CommandParser(commands);
     devices.push(startingRouter);
     outputContainer.innerHTML += `<p>Router initialized.</p>`;
-    outputContainer.innerHTML += `<p>Type 'route add <destination> <gateway>' to add a route.</p>`;
-    outputContainer.innerHTML += `<p>Type 'route del <destination>' to delete a route.</p>`;
-    outputContainer.innerHTML += `<p>Type 'route list' to list all routes.</p>`;
-    outputContainer.innerHTML += `<p>Type 'help' to see available commands.</p>`;
-    outputContainer.innerHTML += `<p>Starting Router HWID: ${devices[0].hardwareID}</p>`;
+    outputContainer.innerHTML += `<p>Discover devices with 'scan'.</p>`;
 };
 
 class Router {
     constructor() {
+        this.deviceName = 'michael5';
         this.routes = [];
         this.hardwareID = Math.floor(Math.random() * 99900)+100;
+        this.type = 'router';
     }
 
     addRoute(destination, gateway) {
@@ -38,7 +46,7 @@ class Router {
         if (this.routes.length === 0) {
             outputContainer.innerHTML += `<p>No routes available.</p>`;
         } else {
-            outputContainer.innerHTML += `<p>Current routes:</p>`;
+            outputContainer.innerHTML += `<p>Current routes (${this.hardwareID}):</p>`;
             this.routes.forEach(route => {
                 outputContainer.innerHTML += `<p>${route.destination} via ${route.gateway} (${route.number})</p>`;
             });
@@ -46,41 +54,77 @@ class Router {
     }
 }
 
+class CommandParser {
+    constructor(commands) {
+        this.commands = commands;
+        this.handlers = {
+            route: this.handleRoute,
+            scan: this.handleScan,
+            // Add new commands here, e.g. 'theme': this.handleTheme
+        };
+    }
+
+    parse(command) {
+        const tokens = command.split(' ');
+        const commandName = tokens[0];
+        const args = tokens.slice(1);
+
+        outputContainer.innerHTML += `<p>Cisco > ${command}</p>`;
+
+        if (this.handlers[commandName]) {
+            this.handlers[commandName].call(this, args);
+        } else {
+            outputContainer.innerHTML += `<p>Unknown command: ${commandName}</p>`;
+        }
+    }
+
+    handleRoute(args) {
+        if (args[0] === 'add') {
+            let destination = args[1];
+            let gateway = args[2];
+            let hwid = args[3] || devices[0].hardwareID;
+            if (destination && gateway) {
+                try {
+                    getDeviceByHWID(parseInt(hwid)).addRoute(destination, gateway);
+                } catch (error) {
+                    outputContainer.innerHTML += "<p>Correct syntax: route add route-destination port-num router-hwid</p>";
+                }
+            }
+        }
+        else if (args[0] === 'del') {
+            try {
+                getDeviceByHWID(parseInt(args[2])).deleteRoute(parseInt(args[1]));
+            } catch (error) {
+                outputContainer.innerHTML += `<p>error</p>`;
+            }
+        } else if (args[0] === 'list' && args[1]) {
+            try {
+                getDeviceByHWID(parseInt(args[1])).listRoutes();
+            } catch (error) {
+                outputContainer.innerHTML += `<p>error</p>`;
+            }
+        }
+    }
+
+    handleScan(args) {
+        devices.forEach(device => {
+            outputContainer.innerHTML += `<p>${device.deviceName} - ${device.type} | hwid : ${device.hardwareID}</p>`;
+        });
+    }
+
+    // Add more handler methods for new commands
+}
+
 document.getElementById('command').addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         const command = event.target.value.trim();
         if (command) {
-            executeCommand(command);
+            commandParser.parse(command);
             event.target.value = ''; // Clear the input after execution
         }
     }
 });
-
-function executeCommand(command) {
-    const tokens = command.split(' ');
-    const commandName = tokens[0];
-    const args = tokens.splice(1);
-    switch (commandName) {
-        case 'route':
-            if (args[0] === 'add') {
-                let destination = args[1];
-                let gateway = args[2];
-                let hwid = args[3] || devices[0].hardwareID; // Default to first device's HWID if not provided
-                if (destination && gateway) {
-                    getDeviceByHWID(parseInt(hwid)).addRoute(destination, gateway);
-                }
-            }
-            else if (args[0] === 'del') {
-                getDeviceByHWID(parseInt(args[2])).deleteRoute(parseInt(args[1]));
-            } else if (args[0] === 'list' && args[1]) {
-                getDeviceByHWID(parseInt(args[1])).listRoutes();
-            }
-            break;
-        // case 'cat':
-        //     break;
-    }
-}
 
 function getDeviceByHWID(hwid) {
     return devices.find(device => device.hardwareID === hwid);

@@ -1,6 +1,4 @@
 body { 
-    background-color: black;
-    color: darkgray;
     margin: 0;
     padding:0;
     width: 100vw;
@@ -9,20 +7,18 @@ body {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-end;
-    font-size: 14px;
+}
+
+span, p, input {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 18px;
 }
 
 #command {
     border: none;
     background-color: transparent;
-    color: lime;
+    height: fit-content;
     width: 90%;
-    font-family: 'Courier New', Courier, monospace;
-    height: 15px;
-}
-
-#command::placeholder {
-    content: "> ";
     color: lime;
 }
 
@@ -33,6 +29,16 @@ input:focus {
 #output-container > p {
     padding: 0;
     margin: 0;
-    color: lime;
-    font-family: 'Courier New', Courier, monospace;
+}
+
+#input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+}
+
+#prompt {
+    height: fit-content;
 }
