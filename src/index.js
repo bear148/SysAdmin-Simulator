@@ -15,8 +15,11 @@ let messageType = {
 }
 
 let connections = [];
+let activeConnections = 0;
 
-let commandHistory = [];
+let lastTime = 0;
+let accumulatedTime = 0;
+const TIME_STEP = 1000 / 60;
 
 window.onload = function () {
     printToConsole(`Welcome to the SysAdmin Simulator!`);
@@ -26,7 +29,7 @@ window.onload = function () {
     document.body.style.color = 'lime';
 
     let startingRouter = new Router();
-    let startingEthPort = new EthernetPort(generateRandomHWID());
+    let startingEthPort = new EthernetPort(generateRandomHWID(), "eth0");
 
     commandParser = new CommandParser(commands);
 
@@ -134,12 +137,21 @@ class CommandParser {
         devices.forEach(device => {
             printToConsole(`${device.deviceName} - ${device.type} | hwid : ${device.hardwareID}`, messageType.INFO);
         });
+
+        if (connections.length === 0) return;
+
+        connections.forEach(conn => {
+            printToConsole(`Connection: ${conn.from.hardwareID} -> ${conn.to.hardwareID} (${conn.from.deviceName} -> ${conn.to.deviceName})`, messageType.INFO);
+        });
     }
 
     handleConnection(args) {
         switch (args[0]) {
             case 'add':
-                establishConnection(getDeviceByHWID(parseInt(args[1])), getDeviceByHWID(parseInt(args[2])));
+                if (getDeviceByHWID(parseInt(args[1])) && getDeviceByHWID(parseInt(args[2]))) {
+                    establishConnection(getDeviceByHWID(parseInt(args[1])), getDeviceByHWID(parseInt(args[2])));
+                    activeConnections++;
+                }
                 break;
             case 'list':
                 connections.forEach(conn => {
@@ -154,6 +166,30 @@ class CommandParser {
         printToConsole(`Ethernet port command executed with args: ${args.join(' ')}`);
     }
 }
+
+/* 
+
+Be sure to uncomment once I add economic features. Not sure how I will structure the economy system yet.
+Will probably be on how many active connections you have, devices you own, operating costs, network efficiency/traffic, etc.
+
+*/
+
+// function GameLoop(timestamp) {
+//     if (!lastTime) lastTime = timestamp;
+
+//     let deltaTime = timestamp - lastTime;
+//     lastTime = timestamp;
+//     accumulatedTime += deltaTime;
+
+//     while (accumulatedTime >= TIME_STEP) {
+//         console.log('tick');
+//         accumulatedTime -= TIME_STEP;
+//     }
+
+//     requestAnimationFrame(GameLoop);
+// }
+
+// requestAnimationFrame(GameLoop);
 
 document.getElementById('command').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
