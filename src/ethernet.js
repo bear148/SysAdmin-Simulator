@@ -13,3 +13,12 @@ export class Connection {
         this.to = toDevice;
     }
 }
+
+export class DevicePort {
+    constructor(portType, portNumber, device) {
+        this.portType = portType;
+        this.portNumber = portNumber;
+        this.connected = false;
+        device.ports.push(this);
+    }
+}

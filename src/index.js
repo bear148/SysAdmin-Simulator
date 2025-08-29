@@ -1,4 +1,4 @@
-import { Connection, EthernetPort } from './ethernet.js';
+import { Connection, EthernetPort, DevicePort } from './ethernet.js';
 
 const outputContainer = document.getElementById('output-container');
 let commandParser;
@@ -44,9 +44,12 @@ class Router {
     constructor() {
         this.deviceName = 'michael5';
         this.routes = [];
+        this.ports = [];
         this.hardwareID = generateRandomHWID();
         this.type = 'router';
         this.connected = false;
+
+        this.generatePorts(4);
     }
 
     addRoute(destination, gateway) {
@@ -70,6 +73,23 @@ class Router {
             this.routes.forEach(route => {
                 printToConsole(`${route.destination} via ${route.gateway} (${route.number})`, messageType.INFO);
             });
+        }
+    }
+
+    listPorts() {
+        if (this.ports.length === 0) {
+            printToConsole(`No ports available.`);
+        } else {
+            printToConsole(`Current ports (${this.hardwareID}):`);
+            this.ports.forEach(port => {
+                printToConsole(`Port ${port.portNumber} - Type: ${port.portType} - Connected: ${port.connected}`, messageType.INFO);
+            });
+        }
+    }
+
+    generatePorts(count) {
+        for (let i = 0; i < count; i++) {
+            new DevicePort("RJ45", i, this);
         }
     }
 }
@@ -163,7 +183,15 @@ class CommandParser {
 
     handleEthernetPorts(args) {
         // Placeholder for ethernet port handling logic
-        printToConsole(`Ethernet port command executed with args: ${args.join(' ')}`);
+        switch (args[0]) {
+            case 'device':
+                getDeviceByHWID(parseInt(args[1])).listPorts();
+                break;
+            // Add more subcommands as needed
+            default:
+                printToConsole(`Unknown subcommand for ethport: ${args[0]}`, messageType.ERROR);
+                break;
+        }
     }
 }
 
@@ -236,4 +264,8 @@ function establishConnection(d1, d2) {
     } else {
         printToConsole(`<p>error</p>`, messageType.ERROR);
     }
+}
+
+function get(id) {
+    return document.getElementById(id);
 }
