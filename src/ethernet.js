@@ -1,9 +1,8 @@
-export class EthernetPort {
+import { Device } from "./device.js";
+
+export class EthernetPort extends Device {
     constructor(hardwareID, deviceName="ethernet-port") {
-        this.hardwareID = hardwareID;
-        this.deviceName = deviceName;
-        this.type = 'eth-port';
-        this.connected = false;
+        super(deviceName, 'eth-port');
     }
 }
 
@@ -18,7 +17,7 @@ export class DevicePort {
     constructor(portType, portNumber, device) {
         this.portType = portType;
         this.portNumber = portNumber;
-        this.connected = false;
+        this.connected = null;
         device.ports.push(this);
     }
 }
